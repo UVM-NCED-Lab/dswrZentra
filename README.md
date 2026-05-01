@@ -37,8 +37,12 @@ dswrZentra/
 | `serials.txt` | `data/usr/inputs/serials.txt` | One Z6 serial (e.g. `z6-14354`) per line |
 | `z6_info_wide.csv` | `data/usr/inputs/z6_info_wide.csv` | Maps each serial to a site, plot, and lists which sensor is on each port |
 
-All other mappings (port → sensor name) are derived automatically from the
-Zentra Cloud metadata CSVs.
+All other mappings (Zentra Cloud header strings → standardised column names,
+sensor product names → short codes) are kept in **R lists at the top of
+`concat_z6_data.R`** (`param_lookup`, `sensor_lookup`). They change only when
+METER releases a new sensor or renames a unit, and are easier to review/
+diff as code than as YAML/CSV (the keys contain Unicode characters such as
+`°`, `³`, `/`).
 
 ---
 
@@ -77,9 +81,16 @@ source("concat_z6_data.R")
 
 ### Step 3 — Map site/plot info and split by sensor (`map_z6_info_and_save_files.R`)
 
-Reads the concatenated files from Step 2, joins them to `z6_info_wide.csv`
-(pivoted from wide to long automatically), and writes one CSV per sensor port
-to `data/usr/outputs/mapped_data/`.
+Reads the concatenated files from Step 2 and, **for every `Port{N}_{Sensor}`
+column group actually present in the data**, writes one CSV to
+`data/usr/outputs/mapped_data/`. Site and Plot are looked up from
+`z6_info_wide.csv` keyed by `(Serial, Port)`.
+
+Sensor identity comes from the data columns themselves (which were named by
+`concat_z6_data.R` from the Zentra Cloud headers), so port re-wiring or
+sensor swaps are handled automatically — the user only needs to keep the
+Site/Plot column accurate. If a port carries multiple sensors, multiple
+files are produced for that port.
 
 Output filenames follow the pattern:
 `<Site>_<Plot>_<Serial>_<Port>_<Sensor>.csv`
@@ -90,7 +101,7 @@ Each file begins with a metadata header:
 # Plot: DAF low
 # Serial: z6-14354
 # Port: Port1
-# Sensor: TEROS 11 Moisture/Temp
+# Sensor: TEROS11
 # Data begins on line: 7
 ```
 
@@ -124,7 +135,10 @@ VB,DAF low,z6-14354,TEROS 11,TEROS 11,SO-411,SO-411,,,
 
 - `Site` — short site code (e.g. `VB`, `VA`)
 - `Plot` — descriptive plot/treatment name
-- `Port_1`–`Port_6` — sensor on each port; leave blank if unused
+- `Port_1`–`Port_6` — sensor on each port; leave blank if unused. **These
+  cells are descriptive only** — actual sensor identity is taken from the
+  data columns. They are still useful for sanity-checking against the
+  Zentra metadata (`zentra_dir` argument enables this check).
 - `Notes` — free-text notes
 
 The script automatically drops blank port cells and derives the long-form

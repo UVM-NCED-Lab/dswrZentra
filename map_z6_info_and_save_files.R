@@ -97,25 +97,41 @@ build_info_long <- function(info_wide_file) {
 # ---------------------------------------------------------------------------
 # Main: process_z6_data
 # ---------------------------------------------------------------------------
-#' Process Z6 Logger Data
+#' Process Z6 Logger Data (data-driven)
 #'
-#' Reads concatenated Z6 data files (output of concat_z6_data.R), maps each
-#' sensor port to its site/plot context using z6_info_wide.csv, and writes
-#' one CSV per sensor port.  Optionally verifies port-sensor assignments
-#' against Zentra Cloud metadata CSVs when zentra_dir is supplied.
+#' For every concatenated Z6 data file in \code{input_dir}, this function:
+#'  \enumerate{
+#'    \item Parses the column names to find every \code{Port{N}_{Sensor}}
+#'          group present in the data (so it adapts automatically when ports
+#'          are re-wired or sensors are swapped).
+#'    \item Looks up the Site and Plot for each (Serial, Port) from the
+#'          user-maintained \code{z6_info_wide.csv}.
+#'    \item Writes one CSV per (Serial, Port, Sensor) group, named
+#'          \code{Site_Plot_Serial_Port_Sensor.csv}, with a 6-line metadata
+#'          header. If a port carries multiple sensors, multiple files are
+#'          produced for that port.
+#'  }
+#' Battery and Barometer housekeeping channels are skipped.
 #'
-#' @param input_dir       Directory containing <serial>_concat.csv files.
-#' @param info_wide_file  Path to the user-maintained z6_info_wide.csv.
-#'   Columns: Site, Plot, Serial, Port_1 ... Port_6, Notes.
-#'   This is the ONLY file users need to maintain; port-sensor assignments
-#'   can be verified (but not overridden) by Zentra metadata CSVs.
+#' Sensor identity is taken from the data columns themselves (which were
+#' named by \code{concat_z6_data.R} from the Zentra Cloud headers), NOT from
+#' \code{z6_info_wide.csv}. The user only declares Site/Plot per (Serial, Port).
+#'
+#' @param input_dir       Directory containing \code{<serial>_concat.csv}
+#'   files (output of \code{concat_z6_data.R}).
+#' @param info_wide_file  Path to the user-maintained \code{z6_info_wide.csv}.
+#'   Columns: \code{Site, Plot, Serial, Port_1 … Port_6, Notes}.
+#'   Only the (Serial, Port) → (Site, Plot) mapping is used; the per-port
+#'   sensor labels in this file are descriptive only.
 #' @param output_dir      Directory where per-sensor CSV files will be written.
 #' @param zentra_dir      (Optional) Zentra Cloud export directory. When
-#'   supplied, metadata CSVs are parsed and discrepancies with
-#'   z6_info_wide.csv are printed as warnings.
-#' @param debug           If TRUE, print detailed diagnostics.
+#'   supplied, the user's sensor labels in \code{z6_info_wide.csv} are
+#'   compared with the loggers' Metadata CSVs and discrepancies are printed
+#'   as warnings. Output files are unaffected.
+#' @param debug           If \code{TRUE}, print detailed diagnostics.
 #'
-#' @return Invisibly returns NULL; side effect is writing files to output_dir.
+#' @return Invisibly returns \code{NULL}; side effect is writing files to
+#'   \code{output_dir}.
 process_z6_data <- function(
     input_dir      = "data/usr/outputs/concat_data",
     info_wide_file = "data/usr/inputs/z6_info_wide.csv",
@@ -133,20 +149,25 @@ process_z6_data <- function(
   if (length(data_files) == 0) stop("No CSV files found in input_dir: ", input_dir)
   if (!file.exists(info_wide_file)) stop("Info file not found: ", info_wide_file)
 
-  # --- 2. Build long-form info from z6_info_wide ---
-  info_df <- build_info_long(info_wide_file) %>%
-    mutate(
-      Port_name   = paste0("Port", Port),
-      Sensor_name = str_replace_all(Sensor, "[^A-Za-z0-9]", "")
-    )
+  # --- 2. Build (Serial, Port) → (Site, Plot) lookup from z6_info_wide ---
+  # The Sensor column in z6_info_wide is now treated as descriptive only;
+  # actual sensor identity per port comes from the concatenated data columns
+  # (which were named by concat_z6_data.R from the Zentra Cloud CSV headers).
+  info_df <- build_info_long(info_wide_file)
+  site_plot_lookup <- info_df %>%
+    select(Serial, Port, Site, Plot) %>%
+    distinct()
 
-  # --- 3. Optional: verify against Zentra metadata CSVs ---
+  # --- 3. Optional: verify z6_info_wide against Zentra metadata CSVs ---
+  # This is purely informational. It compares the user's declared sensor
+  # (in z6_info_wide) to what the logger metadata reports. Output files are
+  # NOT affected — actual sensor identity is taken from the data columns.
   if (!is.null(zentra_dir) && dir.exists(zentra_dir)) {
     meta_df <- parse_zentra_metadata(zentra_dir)
     if (nrow(meta_df) > 0) {
       check <- info_df %>%
         left_join(meta_df, by = c("Serial", "Port")) %>%
-        filter(!is.na(Sensor_zentra))
+        filter(!is.na(Sensor_zentra), !is.na(Sensor), Sensor != "")
 
       mismatches <- check %>%
         filter(!str_detect(Sensor_zentra,
@@ -157,7 +178,7 @@ process_z6_data <- function(
         message("\n[WARNING] Sensor mismatches (z6_info_wide vs Zentra metadata):")
         print(mismatches %>% select(Serial, Port, Sensor, Sensor_zentra))
       } else {
-        message("[OK] Sensor assignments in z6_info_wide.csv match Zentra metadata.")
+        message("[OK] z6_info_wide sensor labels match Zentra metadata.")
       }
     }
   }
@@ -187,52 +208,84 @@ process_z6_data <- function(
               paste(missing_from_info, collapse = ", "))
   }
 
-  # --- 6. Iterate over info rows and write per-sensor files ---
-  pwalk(info_df, function(Site, Plot, Serial, Port, Port_name, Sensor, Sensor_name, ...) {
+  # --- 6. Data-driven split: for each Serial, iterate Port/Sensor groups
+  #         actually present in the concatenated data, write one file each. ---
+  for (serial in names(all_data)) {
 
-    if (!Serial %in% names(all_data)) {
-      if (debug) message("[INFO] No data for Serial: ", Serial, " - skipping.")
-      return()
+    logger_data <- all_data[[serial]]
+    cols <- setdiff(colnames(logger_data), "Timestamps")
+
+    # Parse "Port{N}_{SensorName}_{Param}" -> ("Port{N}_{SensorName}", N)
+    port_sensor <- str_match(cols, "^(Port\\d+_[A-Za-z0-9]+)_")
+    valid       <- !is.na(port_sensor[, 2])
+    if (!any(valid)) {
+      if (debug) message("[INFO] No Port_*_Sensor columns in ", serial, " - skipping.")
+      next
     }
 
-    logger_data   <- all_data[[Serial]]
-    column_prefix <- paste0(Port_name, "_", Sensor_name)
-    sensor_data   <- logger_data %>% select(Timestamps, starts_with(column_prefix))
+    # Unique (Port_name, Sensor_name) groups present in this logger's data
+    groups <- unique(data.frame(
+      prefix      = port_sensor[valid, 2],
+      Port_name   = str_extract(port_sensor[valid, 2], "^Port\\d+"),
+      Sensor_name = str_remove(port_sensor[valid, 2], "^Port\\d+_"),
+      stringsAsFactors = FALSE
+    ))
+    groups$Port <- as.integer(str_extract(groups$Port_name, "\\d+"))
 
-    if (ncol(sensor_data) <= 1) {
-      if (debug)
-        message("[INFO] No columns for ", column_prefix, " in ", Serial, " - skipping.")
-      return()
+    # Skip Battery / Baro housekeeping channels; these aren't field sensors
+    groups <- groups[!groups$Sensor_name %in% c("Battery", "Baro"), , drop = FALSE]
+    if (nrow(groups) == 0) next
+
+    for (i in seq_len(nrow(groups))) {
+      column_prefix <- groups$prefix[i]
+      Port_name     <- groups$Port_name[i]
+      Sensor_name   <- groups$Sensor_name[i]
+      Port_num      <- groups$Port[i]
+
+      # Look up Site/Plot for this (Serial, Port). If absent, warn and use placeholders.
+      lk <- site_plot_lookup %>% filter(Serial == serial, Port == Port_num)
+      if (nrow(lk) == 0) {
+        message("[WARNING] No Site/Plot entry in z6_info_wide for ",
+                serial, " ", Port_name,
+                " — using 'UnknownSite'/'UnknownPlot'. Add a row to z6_info_wide.csv to fix.")
+        Site <- "UnknownSite"
+        Plot <- "UnknownPlot"
+      } else {
+        # If the user has multiple plot rows for one (Serial, Port) we keep them all
+        Site <- paste(unique(lk$Site), collapse = "-")
+        Plot <- paste(unique(lk$Plot), collapse = "-")
+      }
+
+      sensor_data <- logger_data %>% select(Timestamps, starts_with(column_prefix))
+
+      final_df <- sensor_data %>%
+        rename_with(~ str_remove(., paste0(column_prefix, "_")),
+                    .cols = starts_with(column_prefix)) %>%
+        arrange(Timestamps)
+
+      plot_safe <- str_replace_all(Plot, "[^A-Za-z0-9_-]", "_")
+
+      output_filename <- file.path(
+        output_dir,
+        paste0(Site, "_", plot_safe, "_", serial, "_", Port_name, "_", Sensor_name, ".csv")
+      )
+
+      header_lines <- c(
+        paste0("# Site: ",   Site),
+        paste0("# Plot: ",   Plot),
+        paste0("# Serial: ", serial),
+        paste0("# Port: ",   Port_name),
+        paste0("# Sensor: ", Sensor_name)
+      )
+      data_start_line <- length(header_lines) + 2
+      header_lines <- c(header_lines, paste0("# Data begins on line: ", data_start_line))
+
+      write_lines(header_lines, file = output_filename)
+      write_csv(final_df, file = output_filename, append = TRUE, col_names = TRUE, na = "")
+
+      message("  -> Saved: ", basename(output_filename))
     }
-
-    final_df <- sensor_data %>%
-      rename_with(~ str_remove(., paste0(column_prefix, "_")),
-                  .cols = starts_with(column_prefix)) %>%
-      arrange(Timestamps)
-
-    # Replace characters not suitable for filenames
-    plot_safe <- str_replace_all(Plot, "[^A-Za-z0-9_-]", "_")
-
-    output_filename <- file.path(
-      output_dir,
-      paste0(Site, "_", plot_safe, "_", Serial, "_", Port_name, "_", Sensor_name, ".csv")
-    )
-
-    header_lines <- c(
-      paste0("# Site: ",   Site),
-      paste0("# Plot: ",   Plot),
-      paste0("# Serial: ", Serial),
-      paste0("# Port: ",   Port_name),
-      paste0("# Sensor: ", Sensor)
-    )
-    data_start_line <- length(header_lines) + 2
-    header_lines <- c(header_lines, paste0("# Data begins on line: ", data_start_line))
-
-    write_lines(header_lines, file = output_filename)
-    write_csv(final_df, file = output_filename, append = TRUE, col_names = TRUE, na = "")
-
-    message("  -> Saved: ", basename(output_filename))
-  })
+  }
 
   message("\nProcessing complete!")
   invisible(NULL)
