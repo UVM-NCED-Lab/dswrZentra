@@ -149,13 +149,21 @@ process_z6_data <- function(
   if (length(data_files) == 0) stop("No CSV files found in input_dir: ", input_dir)
   if (!file.exists(info_wide_file)) stop("Info file not found: ", info_wide_file)
 
-  # --- 2. Build (Serial, Port) → (Site, Plot) lookup from z6_info_wide ---
+  # --- 2. Build Serial → (Site, Plot) lookup from z6_info_wide ---
   # The Sensor column in z6_info_wide is now treated as descriptive only;
   # actual sensor identity per port comes from the concatenated data columns
   # (which were named by concat_z6_data.R from the Zentra Cloud CSV headers).
+  #
+  # For this study we assume Site and Plot/Treatment are constant per Serial
+  # (a logger doesn't move between sites/plots within a deployment). So the
+  # lookup is keyed on Serial only; the Port columns in z6_info_wide are used
+  # solely for the descriptive sensor labels (and the optional Zentra metadata
+  # cross-check below). This means a port that appears in the data but is not
+  # explicitly listed in z6_info_wide still inherits its logger's Site/Plot
+  # rather than being written as "UnknownSite"/"UnknownPlot".
   info_df <- build_info_long(info_wide_file)
   site_plot_lookup <- info_df %>%
-    select(Serial, Port, Site, Plot) %>%
+    select(Serial, Site, Plot) %>%
     distinct()
 
   # --- 3. Optional: verify z6_info_wide against Zentra metadata CSVs ---
@@ -242,16 +250,18 @@ process_z6_data <- function(
       Sensor_name   <- groups$Sensor_name[i]
       Port_num      <- groups$Port[i]
 
-      # Look up Site/Plot for this (Serial, Port). If absent, warn and use placeholders.
-      lk <- site_plot_lookup %>% filter(Serial == serial, Port == Port_num)
+      # Look up Site/Plot for this Serial. We key on Serial only because for
+      # this study Site/Plot are constant per logger across all ports. If the
+      # serial isn't listed in z6_info_wide at all, warn and use placeholders.
+      lk <- site_plot_lookup %>% filter(Serial == serial)
       if (nrow(lk) == 0) {
-        message("[WARNING] No Site/Plot entry in z6_info_wide for ",
-                serial, " ", Port_name,
+        message("[WARNING] No Site/Plot entry in z6_info_wide for serial ",
+                serial,
                 " — using 'UnknownSite'/'UnknownPlot'. Add a row to z6_info_wide.csv to fix.")
         Site <- "UnknownSite"
         Plot <- "UnknownPlot"
       } else {
-        # If the user has multiple plot rows for one (Serial, Port) we keep them all
+        # If the user has multiple Site/Plot rows for one Serial, keep them all
         Site <- paste(unique(lk$Site), collapse = "-")
         Plot <- paste(unique(lk$Plot), collapse = "-")
       }
