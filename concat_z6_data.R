@@ -19,65 +19,65 @@
 #'
 #' @examples
 #' # Example usage:
-#' folder_path <- "data/usr/inputs/METER/"
+#' folder_path <- "data/usr/inputs/Zentra/"
 #' serial_numbers <- readr::read_lines("data/usr/inputs/serials.txt")
 #' source("R/batch_concat.R")
 #' # Run the script to process and save data.
 source("R/batch_concat.R")
 
 # USER INPUT =========
-# folder where z6 data is located.
-folder_path <- "data/usr/inputs/METER/"
-# Serial numbers of z6 data loggers.
-serial_numbers <- readr::read_lines("inputs/serials.txt")
+# Folder where Zentra Cloud exported data is located.
+# User downloads data from Zentra Cloud and copies the export folders here.
+folder_path <- "data/usr/inputs/Zentra/"
+# Serial numbers of z6 data loggers (one per line, e.g. z6-14354).
+serial_numbers <- readr::read_lines("data/usr/inputs/serials.txt")
 
-# The left hand args are zentra cloud metric names,
-# The right hand args are new metric names,
+# Zentra Cloud parameter name → standardized column name mapping.
+# Left-hand side: exact string from Zentra Cloud CSV header (row 3).
+# Right-hand side: standardized column name used in output files.
+#
+# NOTE: Zentra Cloud changed from ASCII (pre-2025) to Unicode (2025+) unit symbols.
+# Both variants are included here so old and new exports are handled automatically.
 param_lookup <- list(
-  # Zentra_name = New_name,
-  # Older (>2025 zentra cloud output)
-  "m3/m3 Water Content" = "Soil_VWC_m3m3",
-  "degree_C Soil Temperature" = "Soil_Temp_degC",
-  "% Oxygen Concentration" = "Soil_O2_pct",
-  "degree_C Internal Temperature" = "Sensor_Temp_degC",
-  "% Battery Percent" = "Battery_pct",
-  "mV Battery Voltage" = "Battery_mV",
-  "kPa Reference Pressure" = "Ref_Pressure_kPa",
-  "degree_C Logger Temperature" = "Ref_Temp_degC",
-  "mS/cm EC" = "EC_mScm",
-  "mS/cm Weighted EC" = "Weighted_EC_mScm",
-  "degree_C Water Temperature" = "Water_Temp_degC",
-  "mm Precipitation" = "Precip_mm",
-  "mm/h Max Precip Rate"="PrecipMaxRate_mmh",
-  "degree_C Air Temperature"="Air_Temp_degC",
-  "kPa Vapor Pressure"="Vap_Pressure_kPa",
-  "kPa Atmospheric Pressure"="Atm_Pressure_kPa",
+  # --- Shared (unit symbols unchanged between formats) ---
+  "% Oxygen Concentration"      = "Soil_O2_pct",
+  "% Battery Percent"           = "Battery_pct",
+  "mV Battery Voltage"          = "Battery_mV",
+  "kPa Reference Pressure"      = "Ref_Pressure_kPa",
+  "mS/cm EC"                    = "EC_mScm",
+  "mS/cm Weighted EC"           = "Weighted_EC_mScm",
+  "mm Precipitation"            = "Precip_mm",
+  "mm/h Max Precip Rate"        = "PrecipMaxRate_mmh",
+  "kPa Vapor Pressure"          = "Vap_Pressure_kPa",
+  "kPa Atmospheric Pressure"    = "Atm_Pressure_kPa",
+  "kPa VPD"                     = "VPD_kPa",          # ATMOS 14; present in 2025+ exports
 
-  # Current udpated (zentra cloud format)
-  "m3/m3 Water Content" = "Soil_VWC_m3m3",
-  "degree_C Soil Temperature" = "Soil_Temp_degC",
-  "m3/m3 Water Content" = "Soil_VWC_m3m3",
-  "degree_C Soil Temperature" = "Soil_Temp_degC",
-  "% Oxygen Concentration" = "Soil_O2_pct",
+  # --- ASCII format (pre-2025 Zentra Cloud exports) ---
+  "m3/m3 Water Content"         = "Soil_VWC_m3m3",
+  "degree_C Soil Temperature"   = "Soil_Temp_degC",
   "degree_C Internal Temperature" = "Sensor_Temp_degC",
-  "% Oxygen Concentration" = "Soil_O2_pct",
-  "degree_C Internal Temperature" = "Sensor_Temp_degC",
-  "% Battery Percent" = "Battery_pct",
-  "mV Battery Voltage" = "Battery_mV",
-  "kPa Reference Pressure" = "Ref_Pressure_kPa",
-  "degree_C Logger Temperature" = "Ref_Temp_degC"
-  )
+  "degree_C Logger Temperature" = "Ref_Temp_degC",
+  "degree_C Water Temperature"  = "Water_Temp_degC",
+  "degree_C Air Temperature"    = "Air_Temp_degC",
+
+  # --- Unicode format (2025+ Zentra Cloud exports) ---
+  "m\u00b3/m\u00b3 Water Content"      = "Soil_VWC_m3m3",     # m³/m³
+  "\u00b0C Soil Temperature"           = "Soil_Temp_degC",     # °C
+  "\u00b0C Internal Temperature"       = "Sensor_Temp_degC",
+  "\u00b0C Logger Temperature"         = "Ref_Temp_degC",
+  "\u00b0C Water Temperature"          = "Water_Temp_degC",
+  "\u00b0C Air Temperature"            = "Air_Temp_degC"
+)
 
 sensor_lookup <- list(
-  "TEROS 11 Moisture/Temp" = "TEROS11",
-  "SO-411 Soil Oxygen Concentration" = "SO411",
-  "Battery" = "Battery",
-  "Barometer" = "Baro",
-  "ES-2 Conductivity/Temp"="ES2",
-  "ECRN-100 Precipitation" = "ECRN100",
-  "ATMOS 14 Humidity/Temp/Barometer" = "ATMOS14",
-  # updated names.
-  "SO-411/431 Soil Oxygen Concentration" = "SO411" # keeping as SO411 so not to break the code downstream
+  "TEROS 11 Moisture/Temp"                  = "TEROS11",
+  "SO-411 Soil Oxygen Concentration"        = "SO411",
+  "SO-411/431 Soil Oxygen Concentration"    = "SO411",  # 2025+ sensor name; kept as SO411 to avoid downstream breakage
+  "Battery"                                 = "Battery",
+  "Barometer"                               = "Baro",
+  "ES-2 Conductivity/Temp"                  = "ES2",
+  "ECRN-100 Precipitation"                  = "ECRN100",
+  "ATMOS 14 Humidity/Temp/Barometer"        = "ATMOS14"
 )
 
 
