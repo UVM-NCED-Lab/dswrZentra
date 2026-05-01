@@ -1,0 +1,4 @@
+﻿z6-18472,,Port2,Port2,Port2,Port2,Port7,Port7,Port8,Port8, 
+# Records: 1,,ATMOS 14 Humidity/Temp/Barometer,ATMOS 14 Humidity/Temp/Barometer,ATMOS 14 Humidity/Temp/Barometer,ATMOS 14 Humidity/Temp/Barometer,Battery,Battery,Barometer,Barometer, 
+Timestamps,Device RID,raw  Air Temperature,raw  Vapor Pressure,raw  Atmospheric Pressure,raw  VPD,raw  Battery Percent,raw  Battery Voltage,raw  Reference Pressure,raw  Logger Temperature,UTC Offset
+07/21/2022 01:30:00 PM,2,7920,2635,9963,1.4159829299271403,2089,7710,9951,7966,Not Set

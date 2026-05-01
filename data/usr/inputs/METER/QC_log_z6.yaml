@@ -1,0 +1,66 @@
+# METADATA ========					
+# Use for flagging Zentra cloud loggers/sensor errors. 
+# https://zentracloud.com/#/dashboard_list	
+# Maintainer: Adrian Wiegman
+# z6_info_wide.csv --------------
+# Site       Treatment   Serial     Port_1     Port_2     Port_3     Port_4     Port_5     Port_6     
+# VB         DAF LOW     z6-14354   TEROS 11   TEROS 11   SO-411     SO-411                         
+# VB         DAF HIGH    z6-14355   TEROS 11   TEROS 11   SO-411     SO-411                         
+# VB         WEST HIGH   z6-14345   TEROS 11   TEROS 11   SO-411     SO-411                         
+# VB         WEST LOW    z6-14348   TEROS 11   TEROS 11   SO-411     SO-411     SO-411     TEROS 11   
+# VB         EAST HIGH   z6-14347   TEROS 11   TEROS 11   SO-411     SO-411                         
+# VB         EAST LOW    z6-14353   TEROS 11   TEROS 11   SO-411     SO-411                         
+# VB         rain gauge  z6-18472   ECRN-100   ATMOS 14   ES-2       ES-2                             
+# VB         water       z6-19406   ES-2       ES-2                                       
+# VA         Mid tile    z6-18384   ES-2       ES-2       ES-2                               
+# VA         Mid surf    z6-18384   ES-2       ES-2                                       
+# VA         Mid piez    z6-18384   ES-2       ES-2       ES-2                               
+# VA         North tile  z6-18394   ES-2       ES-2                                       
+# VA         North surf  z6-18394   ES-2       ES-2                                       
+# Glossary -------------		
+# Date	yyyy-mm-dd			
+#	Logger: # serial number of z6 device
+# Port: # port number [1,2,3,4,5,6]
+#	Connected: Y or N, Successful connection to logger			
+#	Screenshot:	Y or N, Take a screenshot of the data viewer, periodically dump screenshots into sharepoint folder. 			
+#	Flag: add short note (<3 words) about any issues, leave blank if no issues			
+#	Notes:	add more detailed notes about issues here (leave blank if no issues)			
+
+---
+- Date: 2025-02-13
+  Serial: 14345 # Logger ID, name for campbell, serial number for meter
+  Port: 4 # Logger ID, name for campbell, serial number for meter
+  Screenshot:  # Screenshot collected, Y or N
+  Flag: high O2 # Flag any issues, leave blank if no issues
+  Notes: > # put detailed notes on lines below
+     O2 21.19% at Port 4
+- Date: 2025-02-14
+  Serial: z6-14348 # Logger ID, name for campbell, serial number for meter
+  Port: [2,4] # Logger ID, name for campbell, serial number for meter
+  Screenshot:  # Screenshot collected, Y or N
+  Flag: no response # Flag any issues, leave blank if no issues
+  Notes: > # put detailed notes on lines below
+     No response from port 2 TEROS 11; No response Port 4 S0-411
+- Date: 2025-02-14
+  Serial: z6-14347 # Logger ID, name for campbell, serial number for meter
+  Port: [5,6]
+  Connected: N # Able to connect? Y or N
+  Flag: no response # Flag any issues, leave blank if no issues
+  Notes: > # put detailed notes on lines below
+     No response from ES-2 sensors at 5 and 6, all othe ports at are normal. 
+- Date: 2025-02-13
+  Serial: z6-14354 # Serial number for meter, if more than one use brackets and commas[z6_1,z6_2,...]
+  Port: 3 # use brackets if mulitple, leave blank if none
+  Screenshot:  # Screenshot collected, Y or N
+  Flag: low O2 # Flag any issues, leave blank if no issues
+  Notes: > # put detailed notes on lines below
+     O2 concentration below 1%
+- Date: 2025-02-11
+  Serial: [z6-18394,z6-19406] # serial number for meter z6 
+  Port:  # use brackets if mulitple, leave blank if none
+  Flag: power unstable? # Flag any issues, leave blank if no issues
+  Notes: > # put detailed notes on lines below
+     z6-18394 voltage drop around 2/5 and 2/6, temps near negative 15 C
+     z6-19406 voltage dropped and recovered rapidly 2/5 and 2/6 around midnight
+...
+

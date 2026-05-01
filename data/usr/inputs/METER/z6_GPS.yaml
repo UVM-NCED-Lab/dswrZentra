@@ -1,0 +1,90 @@
+# GPS Locations for the z6 data loggers at VB and VA
+- Serial: z6-18384 
+  Latitude: 44.8258854
+  Longitude: -73.1559601
+  Elevation: 38
+  Fix accuracy: 1636
+  Fix timestamp: 1709096916
+  Number of satellites: 10
+  Time zone: UTC-05
+
+- Serial: z6-18394
+  Latitude: 44.8264548
+  Longitude: -73.1556955
+  Elevation: 39
+  Fix accuracy: 1310
+  Fix timestamp: 1713672420
+  Number of satellites: 10
+  Time zone: UTC-05
+
+- Serial: z6-14354
+  Latitude: 44.0172362
+  Longitude: -73.3241978
+  Elevation: 54
+  Fix accuracy: 2083
+  Fix timestamp: 1733807702
+  Number of satellites: 12
+  Time zone: UTC-05
+
+- Serial: z6-14355
+  Latitude: 44.0160918
+  Longitude: -73.3245227
+  Elevation: 46
+  Fix accuracy: 1274
+  Fix timestamp: 1712463304
+  Number of satellites: 7
+  Time zone: UTC-05
+
+- Serial: z6-14347
+  Latitude: 44.0134533
+  Longitude: -73.3263083
+  Elevation: 53
+  Fix accuracy: 1062
+  Fix timestamp: 1738904972
+  Number of satellites: 12
+  Time zone: UTC-05
+
+- Serial: z6-14353
+  Latitude: 44.0138638
+  Longitude: -73.3264327
+  Elevation: 55
+  Fix accuracy: 1318
+  Fix timestamp: 1738559710
+  Number of satellites: 10
+  Time zone: UTC-05
+
+- Serial: z6-18472
+  Latitude: 44.0129613
+  Longitude: -73.326981
+  Elevation: 53
+  Fix accuracy: 1808
+  Fix timestamp: 1710907951
+  Number of satellites: 8
+  Time zone: UTC-05
+
+- Serial: z6-19406
+  Latitude: 44.0132668
+  Longitude: -73.3268104
+  Elevation: 50
+  Fix accuracy: 1355
+  Fix timestamp: 1739423701
+  Number of satellites: 10
+  Time zone: UTC-05
+
+- Serial: z6-14345
+  Latitude: 44.0136086
+  Longitude: -73.3272139
+  Elevation: 56
+  Fix accuracy: 1411
+  Fix timestamp: 1718683801
+  Number of satellites: 11
+  Time zone: UTC-05
+
+- Serial: z6-14348
+  Latitude: 44.0151267
+  Longitude: -73.3280503
+  Elevation: 53 #m
+  Fix accuracy: 906
+  Fix timestamp: 1736485805
+  Number of satellites: 10
+  Time zone: UTC-05
