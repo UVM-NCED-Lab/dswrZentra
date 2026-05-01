@@ -98,7 +98,7 @@ Output filenames follow the pattern:
 Each file begins with a metadata header:
 ```
 # Site: VB
-# Plot: DAF low
+# Treatment: daf low
 # Serial: z6-14354
 # Port: Port1
 # Sensor: TEROS11

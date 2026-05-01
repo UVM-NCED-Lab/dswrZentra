@@ -271,11 +271,11 @@ process_z6_data <- function(
       )
 
       header_lines <- c(
-        paste0("# Site: ",   Site),
-        paste0("# Plot: ",   Plot),
-        paste0("# Serial: ", serial),
-        paste0("# Port: ",   Port_name),
-        paste0("# Sensor: ", Sensor_name)
+        paste0("# Site: ",      Site),
+        paste0("# Treatment: ", Plot),
+        paste0("# Serial: ",    serial),
+        paste0("# Port: ",      Port_name),
+        paste0("# Sensor: ",    Sensor_name)
       )
       data_start_line <- length(header_lines) + 2
       header_lines <- c(header_lines, paste0("# Data begins on line: ", data_start_line))
