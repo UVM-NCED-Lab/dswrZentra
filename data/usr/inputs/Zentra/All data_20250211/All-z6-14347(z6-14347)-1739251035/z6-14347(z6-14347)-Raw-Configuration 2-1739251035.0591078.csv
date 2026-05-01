@@ -1,0 +1,4 @@
+﻿z6-14347,,Port1,Port1,Port7,Port7,Port8,Port8, 
+# Records: 1,,TEROS 11 Moisture/Temp,TEROS 11 Moisture/Temp,Battery,Battery,Barometer,Barometer, 
+Timestamps,Device RID,raw  Water Content,raw  Soil Temperature,raw  Battery Percent,raw  Battery Voltage,raw  Reference Pressure,raw  Logger Temperature,UTC Offset
+07/20/2022 11:30:00 AM,488,24549,8055,2100,8191,9995,8798,UTC-04:00

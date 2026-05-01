@@ -31,6 +31,8 @@ source("R/batch_concat.R")
 folder_path <- "data/usr/inputs/Zentra/"
 # Serial numbers of z6 data loggers (one per line, e.g. z6-14354).
 serial_numbers <- readr::read_lines("data/usr/inputs/serials.txt")
+# Output folder.
+output_dir <- "data/usr/outputs/concat_data"
 
 # Zentra Cloud parameter name → standardized column name mapping.
 # Left-hand side: exact string from Zentra Cloud CSV header (row 3).
@@ -86,7 +88,7 @@ all_files <- search_files_limited_depth(dir=folder_path,max_depth = 4)
 
 # Step 2: Filter files to include only relevant ones
 match_patterns <- serial_numbers  # Example: Match serial numbers starting with "z6"
-omit_patterns <- c("Raw")  # Example: Exclude raw data files
+omit_patterns <- c("Raw","Metadata")  # Example: Exclude raw data files
 filtered_files <- filter_strings_match_omit(all_files,
                                             match_patterns,
                                             omit_patterns,
@@ -96,7 +98,18 @@ filtered_files <- filter_strings_match_omit(all_files,
 grouped_files <- group_strings_by_identifier(filtered_files, serial_numbers)
 print(grouped_files)
 
+
+
 # Step 4: Read data for each serial number
+rename_cols <- function(df, new_names) {
+  if (!is.null(new_names) && length(new_names) == ncol(df)) {
+    names(df) <- new_names
+  } else {
+    warning("Column name count does not match data frame columns.")
+  }
+  df
+}
+
 data_list <- lapply(grouped_files, function(files) {
   message(files)
   # Read CSV files into a list of data frames
@@ -116,11 +129,10 @@ data_list_combined <- lapply(data_list,function(df_list){
 })
 
 # Step 5: Save the combined data for future analysis
-output_dir <- "data/usr/outputs/concat_data"
 dir.create(output_dir, showWarnings = FALSE)
-lapply(names(data_list_combined), function(name) {
+for (name in names(data_list_combined)){
+  print(name)
+  df <- data_list_combined[[name]]
   output_csv <- file.path(output_dir, paste0(name, "_concat.csv"))
-  readr::write_csv(data_list_combined[[name]], output_csv)
-  output_Rdata <- file.path(output_dir, paste0(name, "_concat.Rdata"))
-  save(data_list_combined[[name]],file=output_Rdata)
-})
+  readr::write_csv(df, output_csv)
+}

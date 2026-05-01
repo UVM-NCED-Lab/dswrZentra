@@ -1,0 +1,95 @@
+﻿Configuration,Device Name,z6-14347
+,Site Name,University of Vermont
+,Serial Number,22813
+,Device Type,192
+,Firmware Version,216
+,Hardware Version,unknown
+,Measurement Interval,900
+,,
+Software,Software Version,2.14.85
+,,
+Location,Latitude,44.0134662
+,Longitude,-73.3262909
+,Logger Time,2026-05-01 04:38:40.968585+00:00
+,Current Time Zone,UTC-04:00
+,Satellite Vehicles,13
+,GPS Fix Status,5
+,Horizontal Accuracy,1523
+,Altitude,52928
+,,
+Cellular Hardware,SIM Number,8944502403212409114
+,Modem Firmware Version,512
+,Modem Type,10
+,,
+Cellular Configuration,Queue Data,1
+,Allow All Upload Hours,1
+,Unrestricted Measurement Interval,0
+,Four Reports per Hour,0
+,Four Reports per Night,0
+,,
+Radio,Power,
+,Channel,
+,Firmware Version,
+,,
+Sensors,Port #,1
+,Name,TEROS 11 Moisture/Temp
+,Serial Number,T11-00014628
+,Meta,0
+,Value,0
+,Status,1
+,Version,200
+,Coefficient,Mineral
+,,
+,Port #,2
+,Name,TEROS 11 Moisture/Temp
+,Serial Number,T11-00014630
+,Meta,0
+,Value,0
+,Status,1
+,Version,200
+,Coefficient,Mineral
+,,
+,Port #,3
+,Name,SO-411/431 Soil Oxygen Concentration
+,Serial Number,B051001
+,Meta,0
+,Value,0
+,Status,1
+,Version,209
+,Coefficient,
+,,
+,Port #,4
+,Name,SO-411/431 Soil Oxygen Concentration
+,Serial Number,B051001
+,Meta,0
+,Value,0
+,Status,1
+,Version,209
+,Coefficient,
+,,
+,Port #,5
+,Name,ES-2 Conductivity/Temp
+,Serial Number,
+,Meta,0
+,Value,0
+,Status,0
+,Version,385
+,Coefficient,
+,,
+,Port #,6
+,Name,ES-2 Conductivity/Temp
+,Serial Number,
+,Meta,0
+,Value,0
+,Status,0
+,Version,385
+,Coefficient,
+,,
+,Port #,7
+,Name,Barometer
+,Serial Number,1629177861
+,Meta,1629177861
+,Value,0
+,Status,1
+,Version,100
+,Coefficient,

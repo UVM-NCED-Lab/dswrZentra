@@ -1,0 +1,4 @@
+﻿z6-14345,Port1,Port1,Port2,Port2,Port3,Port3,Port7,Port7,Port8,Port8
+# Records: 1,TEROS 11 Moisture/Temp,TEROS 11 Moisture/Temp,TEROS 11 Moisture/Temp,TEROS 11 Moisture/Temp,SO-411/431 Soil Oxygen Concentration,SO-411/431 Soil Oxygen Concentration,Battery,Battery,Barometer,Barometer
+Timestamps, m3/m3 Water Content, degree_C Soil Temperature, m3/m3 Water Content, degree_C Soil Temperature,% Oxygen Concentration, degree_C Internal Temperature,% Battery Percent, mV Battery Voltage, kPa Reference Pressure, degree_C Logger Temperature
+07/20/2022 10:15:00 AM,0.321,22.8,0.326,23.3,19.96,32.17,100,8248,99.96,32.8

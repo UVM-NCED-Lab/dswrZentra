@@ -1,0 +1,4 @@
+﻿z6-18472,Port2,Port2,Port2,Port2,Port7,Port7,Port8,Port8
+# Records: 1,ATMOS 14 Humidity/Temp/Barometer,ATMOS 14 Humidity/Temp/Barometer,ATMOS 14 Humidity/Temp/Barometer,ATMOS 14 Humidity/Temp/Barometer,Battery,Battery,Barometer,Barometer
+Timestamps, degree_C Air Temperature, kPa Vapor Pressure, kPa Atmospheric Pressure, kPa VPD,% Battery Percent, mV Battery Voltage, kPa Reference Pressure, degree_C Logger Temperature
+07/21/2022 01:30:00 PM,29.2,2.635,99.63,1.42,89,7710,99.51,29.7

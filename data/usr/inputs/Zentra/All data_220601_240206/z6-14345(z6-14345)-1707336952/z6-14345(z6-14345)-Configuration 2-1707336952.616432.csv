@@ -1,0 +1,9 @@
+﻿z6-14345,Port1,Port1,Port2,Port2,Port7,Port7,Port8,Port8
+# Records: 6,SO-411 Soil Oxygen Concentration,SO-411 Soil Oxygen Concentration,SO-411 Soil Oxygen Concentration,SO-411 Soil Oxygen Concentration,Battery,Battery,Barometer,Barometer
+Timestamps,% Oxygen Concentration, °C Internal Temperature,% Oxygen Concentration, °C Internal Temperature,% Battery Percent, mV Battery Voltage, kPa Reference Pressure, °C Logger Temperature
+07/15/2022 12:15:00 PM,21.93,27.82,21.75,28.49,100,7817,101.42,28.2
+07/15/2022 12:30:00 PM,20.97,27.75,20.95,28.34,100,7914,101.41,27.9
+07/15/2022 12:45:00 PM,,,,,100,7902,101.4,27.8
+07/15/2022 01:00:00 PM,,,,,100,7906,101.39,29.4
+07/15/2022 01:15:00 PM,,,,,100,7905,101.36,30.8
+07/15/2022 01:30:00 PM,,,,,100,7912,101.34,29.9

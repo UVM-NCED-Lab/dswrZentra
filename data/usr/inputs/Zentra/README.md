@@ -1,6 +1,10 @@
 # Zentra/ — Zentra Cloud export drop zone
 
-Copy your Zentra Cloud export folder(s) here.
+Copy your Zentra Cloud export folder(s) here. `data/user/inputs/Zentra/
+
+Zentra users: Molly Ratliff (Admin) and Adrian Wiegman, Joshua Faulkner Dan Lipskin 
+
+Down load all data for all time ranges then extract the files. 
 
 Each logger export is a sub-folder named like:
 

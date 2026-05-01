@@ -1,0 +1,77 @@
+﻿Configuration,Device Name,z6-18472
+,Site Name,University of Vermont
+,Serial Number,26973
+,Device Type,192
+,Firmware Version,214
+,Hardware Version,unknown
+,Measurement Interval,900
+,,
+Software,Software Version,2.14.85
+,,
+Location,Latitude,44.0129613
+,Longitude,-73.326981
+,Logger Time,2024-03-23 04:30:30.187308+00:00
+,Current Time Zone,UTC-05:00
+,Satellite Vehicles,8
+,GPS Fix Status,7
+,Horizontal Accuracy,1808
+,Altitude,53310
+,,
+Cellular Hardware,SIM Number,89148000007473733398
+,Modem Firmware Version,512
+,Modem Type,10
+,,
+Cellular Configuration,Queue Data,1
+,Allow All Upload Hours,1
+,Unrestricted Measurement Interval,0
+,Four Reports per Hour,0
+,Four Reports per Night,0
+,,
+Radio,Power,
+,Channel,
+,Firmware Version,
+,,
+Sensors,Port #,1
+,Name,ECRN-100 Precipitation
+,Serial Number,
+,Meta,0
+,Value,0
+,Status,0
+,Version,0
+,Coefficient,
+,,
+,Port #,2
+,Name,ATMOS 14 Humidity/Temp/Barometer
+,Serial Number,A14G200001365
+,Meta,8287
+,Value,0
+,Status,1
+,Version,200
+,Coefficient,
+,,
+,Port #,3
+,Name,ES-2 Conductivity/Temp
+,Serial Number,
+,Meta,0
+,Value,0
+,Status,1
+,Version,385
+,Coefficient,
+,,
+,Port #,4
+,Name,ES-2 Conductivity/Temp
+,Serial Number,
+,Meta,0
+,Value,0
+,Status,0
+,Version,385
+,Coefficient,
+,,
+,Port #,5
+,Name,Barometer
+,Serial Number,1652880835
+,Meta,1652880835
+,Value,0
+,Status,1
+,Version,100
+,Coefficient,

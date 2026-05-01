@@ -1,0 +1,9 @@
+﻿z6-14345,,Port1,Port1,Port2,Port2,Port7,Port7,Port8,Port8, 
+# Records: 6,,SO-411 Soil Oxygen Concentration,SO-411 Soil Oxygen Concentration,SO-411 Soil Oxygen Concentration,SO-411 Soil Oxygen Concentration,Battery,Battery,Barometer,Barometer, 
+Timestamps,Device RID,raw  Oxygen Concentration,raw  Internal Temperature,raw  Oxygen Concentration,raw  Internal Temperature,raw  Battery Percent,raw  Battery Voltage,raw  Reference Pressure,raw  Logger Temperature,UTC Offset
+07/15/2022 12:15:00 PM,6,2193,7782,2175,7849,2100,7817,10142,7819,UTC-04:00
+07/15/2022 12:30:00 PM,7,2097,7775,2095,7834,2100,7914,10141,7787,UTC-04:00
+07/15/2022 12:45:00 PM,8,65534,65534,65534,65534,2100,7902,10140,7776,UTC-04:00
+07/15/2022 01:00:00 PM,9,65534,65534,65534,65534,2100,7906,10139,7937,UTC-04:00
+07/15/2022 01:15:00 PM,10,65534,65534,65534,65534,2100,7905,10136,8076,UTC-04:00
+07/15/2022 01:30:00 PM,11,65534,65534,65534,65534,2100,7912,10134,7994,UTC-04:00
