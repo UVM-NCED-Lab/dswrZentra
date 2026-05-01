@@ -263,7 +263,10 @@ process_z6_data <- function(
                     .cols = starts_with(column_prefix)) %>%
         arrange(Timestamps)
 
-      plot_safe <- str_replace_all(Plot, "[^A-Za-z0-9_-]", "_")
+      # Preserve a single space between Field and Plot so downstream parsers
+      # (inst/archive/query_sensor_files.R) can split the combined "field plot"
+      # token on " " to recover Field and Plot from the filename.
+      plot_safe <- str_replace_all(Plot, "[^A-Za-z0-9 _-]", "_")
 
       output_filename <- file.path(
         output_dir,
