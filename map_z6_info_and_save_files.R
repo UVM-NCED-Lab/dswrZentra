@@ -105,7 +105,10 @@ build_info_long <- function(info_wide_file) {
 #'          group present in the data (so it adapts automatically when ports
 #'          are re-wired or sensors are swapped).
 #'    \item Looks up the Site and Plot for each (Serial, Port) from the
-#'          user-maintained \code{z6_info_wide.csv}.
+#'          user-maintained \code{z6_info_wide.csv}. The lookup tries an
+#'          exact \code{(Serial, Port)} match first; if the port isn't
+#'          listed for that serial, it falls back to the Serial-only
+#'          Site/Plot so the port still inherits the logger's location.
 #'    \item Writes one CSV per (Serial, Port, Sensor) group, named
 #'          \code{Site_Plot_Serial_Port_Sensor.csv}, with a 6-line metadata
 #'          header. If a port carries multiple sensors, multiple files are
@@ -121,8 +124,10 @@ build_info_long <- function(info_wide_file) {
 #'   files (output of \code{concat_z6_data.R}).
 #' @param info_wide_file  Path to the user-maintained \code{z6_info_wide.csv}.
 #'   Columns: \code{Site, Plot, Serial, Port_1 … Port_6, Notes}.
-#'   Only the (Serial, Port) → (Site, Plot) mapping is used; the per-port
-#'   sensor labels in this file are descriptive only.
+#'   The (Serial, Port) → (Site, Plot) mapping is preferred; rows without an
+#'   explicit per-port entry inherit Site/Plot from any other row matching
+#'   the same Serial. The per-port sensor labels in this file are
+#'   descriptive only (used for the optional Zentra metadata cross-check).
 #' @param output_dir      Directory where per-sensor CSV files will be written.
 #' @param zentra_dir      (Optional) Zentra Cloud export directory. When
 #'   supplied, the user's sensor labels in \code{z6_info_wide.csv} are
@@ -149,13 +154,28 @@ process_z6_data <- function(
   if (length(data_files) == 0) stop("No CSV files found in input_dir: ", input_dir)
   if (!file.exists(info_wide_file)) stop("Info file not found: ", info_wide_file)
 
-  # --- 2. Build (Serial, Port) → (Site, Plot) lookup from z6_info_wide ---
-  # The Sensor column in z6_info_wide is now treated as descriptive only;
-  # actual sensor identity per port comes from the concatenated data columns
-  # (which were named by concat_z6_data.R from the Zentra Cloud CSV headers).
+  # --- 2. Build Site/Plot lookups from z6_info_wide ---
+  # The Sensor column in z6_info_wide is treated as descriptive only; actual
+  # sensor identity per port comes from the concatenated data columns (which
+  # were named by concat_z6_data.R from the Zentra Cloud CSV headers).
+  #
+  # Two lookups are built so we can do a (Serial, Port) → (Site, Plot) match
+  # first and fall back to Serial-only if the port isn't listed:
+  #   * site_plot_port_lookup: keyed on (Serial, Port). Used when a logger
+  #     spans multiple plots across its ports (e.g. z6-18472 with rain gauge
+  #     on ports 1/2, west tile on port 3, east tile on port 4).
+  #   * site_plot_lookup:      keyed on Serial only. Used as a fallback for
+  #     ports that appear in the data but aren't explicitly listed in
+  #     z6_info_wide, so they inherit the logger's Site/Plot rather than
+  #     being written as "UnknownSite"/"UnknownPlot". If the Serial itself
+  #     has multiple distinct Site/Plot values, the unique values are joined
+  #     with "-".
   info_df <- build_info_long(info_wide_file)
-  site_plot_lookup <- info_df %>%
+  site_plot_port_lookup <- info_df %>%
     select(Serial, Port, Site, Plot) %>%
+    distinct()
+  site_plot_lookup <- info_df %>%
+    select(Serial, Site, Plot) %>%
     distinct()
 
   # --- 3. Optional: verify z6_info_wide against Zentra metadata CSVs ---
@@ -242,18 +262,33 @@ process_z6_data <- function(
       Sensor_name   <- groups$Sensor_name[i]
       Port_num      <- groups$Port[i]
 
-      # Look up Site/Plot for this (Serial, Port). If absent, warn and use placeholders.
-      lk <- site_plot_lookup %>% filter(Serial == serial, Port == Port_num)
-      if (nrow(lk) == 0) {
-        message("[WARNING] No Site/Plot entry in z6_info_wide for ",
-                serial, " ", Port_name,
-                " — using 'UnknownSite'/'UnknownPlot'. Add a row to z6_info_wide.csv to fix.")
-        Site <- "UnknownSite"
-        Plot <- "UnknownPlot"
+      # Look up Site/Plot. Prefer an exact (Serial, Port) match from
+      # z6_info_wide so loggers whose ports span multiple plots
+      # (e.g. z6-18472: rain gauge on ports 1/2, west tile on 3, east
+      # tile on 4) get the correct per-port Site/Plot. If the port isn't
+      # listed for this Serial, fall back to the Serial-only lookup so the
+      # port still inherits the logger's Site/Plot. If the Serial isn't
+      # listed at all, warn and use placeholders.
+      lk_port <- site_plot_port_lookup %>%
+        filter(Serial == serial, Port == Port_num)
+      if (nrow(lk_port) >= 1) {
+        Site <- paste(unique(lk_port$Site), collapse = "-")
+        Plot <- paste(unique(lk_port$Plot), collapse = "-")
       } else {
-        # If the user has multiple plot rows for one (Serial, Port) we keep them all
-        Site <- paste(unique(lk$Site), collapse = "-")
-        Plot <- paste(unique(lk$Plot), collapse = "-")
+        lk <- site_plot_lookup %>% filter(Serial == serial)
+        if (nrow(lk) == 0) {
+          message("[WARNING] No Site/Plot entry in z6_info_wide for serial ",
+                  serial,
+                  " — using 'UnknownSite'/'UnknownPlot'. Add a row to z6_info_wide.csv to fix.")
+          Site <- "UnknownSite"
+          Plot <- "UnknownPlot"
+        } else {
+          # Serial is listed but this specific Port isn't. Fall back to the
+          # logger-level Site/Plot. If the Serial spans multiple Site/Plot
+          # rows, keep them all by joining the unique values.
+          Site <- paste(unique(lk$Site), collapse = "-")
+          Plot <- paste(unique(lk$Plot), collapse = "-")
+        }
       }
 
       sensor_data <- logger_data %>% select(Timestamps, starts_with(column_prefix))
